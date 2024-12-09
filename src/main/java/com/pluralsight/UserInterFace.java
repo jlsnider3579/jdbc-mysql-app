@@ -51,14 +51,15 @@ public class UserInterFace {
 
             // Handle user input
             switch (choice) {
-                case 1 -> processGetByPriceRequest();
-                case 2 -> processGetByMakeModelRequest();
-                case 3 -> processGetByYearRequest();
-                case 4 -> processGetByColorRequest();
-                case 5 -> processGetByMileageRequest();
-                case 6 -> processGetByVehicleTypeRequest();
-                case 7 -> processGetAllVehiclesRequest(vehicleDao.findAllVehicles());
-                case 8 -> processAddVehicleRequest();
+                case 1 -> processGetByVinRequest();
+                case 2 -> processGetByPriceRequest();
+                case 3 -> processGetByMakeModelRequest();
+                case 4 -> processGetByYearRequest();
+                case 5 -> processGetByColorRequest();
+                case 6 -> processGetByMileageRequest();
+                case 7 -> processGetByVehicleTypeRequest();
+                case 8 -> processGetAllVehiclesRequest(vehicleDao.findAllVehicles());
+                case 9 -> processAddVehicleRequest();
                 // case 9 -> processRemoveVehicleRequest();
                 case 0 -> {
                     System.out.println("Exiting the program. Goodbye!");
@@ -69,11 +70,18 @@ public class UserInterFace {
             }
         }
     }
-    public void processGetByVinRequest(int vin){
+    public void processGetByVinRequest(){
         Scanner s = new Scanner(System.in);
         System.out.println("Enter vehicle vin");
+        int vin = s.nextInt();
 
-        List<Vehicle> vehiclesByVin = dealership.getInventory().stream().filter(vehicle -> vehicle.getVin() == vin).toList();
+        List<Vehicle> vehiclesByVin = vehicleDao.findVehiclesByVin(vin);
+
+        if (vehiclesByVin.isEmpty()){
+            System.out.println("no vehicles with specified vin");
+        }else {
+            System.out.println(vehiclesByVin);
+        }
     }
 
     // Placeholder methods (to be implemented later)
@@ -141,12 +149,12 @@ public class UserInterFace {
 
     public void processGetByMileageRequest() {
         Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter minimum mileage");
+        int minMileage = scanner.nextInt();
         System.out.println("Enter maximum mileage: ");
         int maxMileage = scanner.nextInt();
 
-        List<Vehicle> vehiclesByMileage = dealership.getInventory().stream()
-                .filter(vehicle -> vehicle.getOdometer() <= maxMileage)
-                .collect(Collectors.toList());
+        List<Vehicle> vehiclesByMileage = vehicleDao.findVehiclesByOdometer(minMileage, maxMileage);
 
         if (vehiclesByMileage.isEmpty()) {
             System.out.println("No vehicles found with mileage under " + maxMileage + ".");
@@ -160,9 +168,7 @@ public class UserInterFace {
         System.out.println("Enter vehicle type (e.g., Sedan, SUV): ");
         String vehicleType = scanner.nextLine();
 
-        List<Vehicle> vehiclesByType = dealership.getInventory().stream()
-                .filter(vehicle -> vehicle.getVehicleType().equalsIgnoreCase(vehicleType))
-                .collect(Collectors.toList());
+        List<Vehicle> vehiclesByType = vehicleDao.findVehiclesByType(vehicleType);
 
         if (vehiclesByType.isEmpty()) {
             System.out.println("No vehicles found of type " + vehicleType + ".");
