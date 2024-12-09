@@ -1,17 +1,24 @@
 package com.pluralsight;
 
-import org.apache.commons.dbcp2.BasicDataSource;
+import com.pluralsight.dao.VehicleDao;
+import com.pluralsight.dao.VehicleDaoImpl;
 
+import javax.sql.DataSource;
 import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
 public class UserInterFace {
     private Dealership dealership;
+    private VehicleDao vehicleDao;
+
+    static String url = "jdbc:mysql://localhost:3306/dealership";
+    static String userName = "root";
+    static String password = "yearup";
 
     // Constructor
-    public UserInterFace(BasicDataSource ds) {
-
+    public UserInterFace(DataSource dataSource) {
+        vehicleDao = new VehicleDaoImpl(dataSource);
     }
 
     // Method to display the menu and process user commands
@@ -23,16 +30,16 @@ public class UserInterFace {
             // Display menu options
             System.out.println("""
                      Welcome to the D & B Dealership
-                    
-                     1. View Vehicles by Price
-                     2. View Vehicles by Make and Model
-                     3. View Vehicles by Year
-                     4. View Vehicles by Color
-                     5. View Vehicles by Mileage
-                     6. View Vehicles by Type
-                     7. View All Vehicles
-                     8. Add a Vehicle
-                     9. Remove a Vehicle
+                     1. View vehicles by vin
+                     2. View Vehicles by Price
+                     3. View Vehicles by Make/model
+                     5. View Vehicles by Year
+                     6. View Vehicles by Color
+                     7. View Vehicles by Mileage
+                     8. View Vehicles by Type
+                     9. View All Vehicles
+                     10. Add a Vehicle
+                     11. Remove a Vehicle
                      0. Exit
                     """);
 
@@ -50,7 +57,7 @@ public class UserInterFace {
                 case 4 -> processGetByColorRequest();
                 case 5 -> processGetByMileageRequest();
                 case 6 -> processGetByVehicleTypeRequest();
-                case 7 -> processGetAllVehiclesRequest();
+                case 7 -> processGetAllVehiclesRequest(vehicleDao.findAllVehicles());
                 case 8 -> processAddVehicleRequest();
                 // case 9 -> processRemoveVehicleRequest();
                 case 0 -> {
@@ -62,6 +69,12 @@ public class UserInterFace {
             }
         }
     }
+    public void processGetByVinRequest(int vin){
+        Scanner s = new Scanner(System.in);
+        System.out.println("Enter vehicle vin");
+
+        List<Vehicle> vehiclesByVin = dealership.getInventory().stream().filter(vehicle -> vehicle.getVin() == vin).toList();
+    }
 
     // Placeholder methods (to be implemented later)
     public void processGetByPriceRequest() {
@@ -71,8 +84,7 @@ public class UserInterFace {
         System.out.println("Enter you maximum price ");
         double maximumPrice = s.nextDouble();
 
-        List<Vehicle> vehiclesByPrice = dealership.getInventory().stream().filter(vehicle -> vehicle.getPrice() >= minimumPrice && vehicle.getPrice() <= maximumPrice)
-                .collect(Collectors.toList());
+        List<Vehicle> vehiclesByPrice = vehicleDao.findVehiclesByPrice(minimumPrice, maximumPrice);
 
         if (vehiclesByPrice.isEmpty()) {
             System.out.println("No vehicles within price range");
@@ -88,9 +100,7 @@ public class UserInterFace {
         System.out.println("Enter model: ");
         String model = scanner.nextLine();
 
-        List<Vehicle> vehiclesByMakeModel = dealership.getInventory().stream()
-                .filter(vehicle -> vehicle.getMake().equalsIgnoreCase(make) && vehicle.getModel().equalsIgnoreCase(model))
-                .collect(Collectors.toList());
+        List<Vehicle> vehiclesByMakeModel = vehicleDao.findVehicleByMakeModel(make, model);
 
         if (vehiclesByMakeModel.isEmpty()) {
             System.out.println("No vehicles found with the specified make and model.");
@@ -101,12 +111,12 @@ public class UserInterFace {
 
     public void processGetByYearRequest() {
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Enter year: ");
-        int year = scanner.nextInt();
+        System.out.println("Enter start year: ");
+        int startYear = scanner.nextInt();
+        System.out.println("Enter end year");
+        int endYear= scanner.nextInt();
 
-        List<Vehicle> vehiclesByYear = dealership.getInventory().stream()
-                .filter(vehicle -> vehicle.getYear() == year)
-                .collect(Collectors.toList());
+        List<Vehicle> vehiclesByYear = vehicleDao.findVehiclesByYear(startYear, endYear);
 
         if (vehiclesByYear.isEmpty()) {
             System.out.println("No vehicles found for the specified year.");
@@ -120,9 +130,7 @@ public class UserInterFace {
         System.out.println("Enter color: ");
         String color = scanner.nextLine();
 
-        List<Vehicle> vehiclesByColor = dealership.getInventory().stream()
-                .filter(vehicle -> vehicle.getColor().equalsIgnoreCase(color))
-                .collect(Collectors.toList());
+        List<Vehicle> vehiclesByColor = vehicleDao.findVehiclesByColor(color);
 
         if (vehiclesByColor.isEmpty()) {
             System.out.println("No vehicles found with the specified color.");
@@ -163,8 +171,7 @@ public class UserInterFace {
         }
     }
 
-    public void processGetAllVehiclesRequest() {
-        List<Vehicle> inventory = dealership.getInventory();
+    public void processGetAllVehiclesRequest( List<Vehicle> inventory) {
         if (inventory.isEmpty()) {
             System.out.println("No vehicles available in the inventory.");
         } else {

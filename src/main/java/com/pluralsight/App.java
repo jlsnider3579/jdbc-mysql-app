@@ -1,5 +1,6 @@
 package com.pluralsight;
 
+import com.pluralsight.dao.VehicleDao;
 import org.apache.commons.dbcp2.BasicDataSource;
 
 public class App {

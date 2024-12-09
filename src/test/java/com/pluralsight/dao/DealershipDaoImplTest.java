@@ -22,7 +22,7 @@ class DealershipDaoImplTest {
 
 
     @Test
-    void findAllVehicles() {
+    void findAllDealerships() {
         List<Dealership> dealershipList = dao.findAllDealerships();
         int expected = 1;
         assertEquals(expected, dealershipList.size());

@@ -55,8 +55,17 @@ public class Vehicle {
         return price;
     }
 
-    public String toCSVFormat() {
-        return String.format("%d|%d|%s|%s|%s|%s|%d|%.2f",
-                vin, year, make, model, vehicleType, color, odometer, price);
+    @Override
+    public String toString() {
+        return "Vehicle{" +
+                "vin=" + vin +
+                ", year=" + year +
+                ", make='" + make + '\'' +
+                ", model='" + model + '\'' +
+                ", vehicleType='" + vehicleType + '\'' +
+                ", color='" + color + '\'' +
+                ", odometer=" + odometer +
+                ", price=" + price +
+                '}';
     }
 }
